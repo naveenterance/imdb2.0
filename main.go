@@ -4,36 +4,71 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
-	"unicode"
 
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/go-resty/resty/v2"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var tpl *template.Template
-var db *sql.DB
+type SearchResult struct {
+	Title  string `json:"Title"`
+	Year   string `json:"Year"`
+	IMDBID string `json:"imdbID"`
+	Type   string `json:"Type"`
+	Poster string `json:"Poster"`
+}
 
+type SearchResults struct {
+	Search       []SearchResult `json:"Search"`
+	TotalResults string         `json:"totalResults"`
+	Response     string         `json:"Response"`
+}
+
+type Films struct {
+	UserID  string
+	MovieID string
+	Ratings string
+}
+
+type Movie struct {
+	Title string `json:"Title"`
+	Year  string `json:"Year"`
+}
+
+type FilmsInfo struct {
+	Title   string
+	Year    string
+	Ratings string
+}
+
+var movinfo FilmsInfo
+var movinfos []FilmsInfo
+var searchTerm string
+var db *sql.DB
+var tpl *template.Template
+var userID, hash string
 var store = sessions.NewCookieStore([]byte("super-secret"))
 
 func main() {
 	tpl, _ = template.ParseGlob("templates/*.html")
 	var err error
-	db, err = sql.Open("mysql", "root:nst@tcp(localhost:3306)/testdb")
+	db, err = sql.Open("mysql", "root:nst@tcp(localhost:3306)/recordings")
 	if err != nil {
 		panic(err.Error())
 	}
 	defer db.Close()
 	http.HandleFunc("/login", loginHandler)
 	http.HandleFunc("/loginauth", loginAuthHandler)
-	http.HandleFunc("/logout", logoutHandler)
-	http.HandleFunc("/register", registerHandler)
-	http.HandleFunc("/registerauth", registerAuthHandler)
-	http.HandleFunc("/about", aboutHandler)
-	http.HandleFunc("/", indexHandler)
+	// http.HandleFunc("/logout", logoutHandler)
+	// http.HandleFunc("/register", registerHandler)
+	// http.HandleFunc("/registerauth", registerAuthHandler)
+	// http.HandleFunc("/about", aboutHandler)
+	http.HandleFunc("/", movie_list)
 
 	http.ListenAndServe("localhost:8080", context.ClearHandler(http.DefaultServeMux))
 }
@@ -50,7 +85,6 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 	fmt.Println("username:", username, "password:", password)
 
-	var userID, hash string
 	stmt := "SELECT UserID, Hash FROM bcrypt WHERE Username = ?"
 	row := db.QueryRow(stmt, username)
 	err := row.Scan(&userID, &hash)
@@ -69,15 +103,151 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		session.Values["userID"] = userID
 
 		session.Save(r, w)
-		tpl.ExecuteTemplate(w, "index.html", "Logged In")
+		http.Redirect(w, r, "/", http.StatusFound)
 		return
 	}
 	fmt.Println("incorrect password")
 	tpl.ExecuteTemplate(w, "login.html", "check username and password")
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****indexHandler running*****")
+// func indexHandler(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("*****indexHandler running*****")
+// 	session, _ := store.Get(r, "session")
+// 	_, ok := session.Values["userID"]
+// 	fmt.Println("ok:", ok)
+// 	if !ok {
+// 		http.Redirect(w, r, "/login", http.StatusFound)
+// 		return
+// 	}
+// 	tpl.ExecuteTemplate(w, "index.html", "Logged In")
+// }
+
+// func aboutHandler(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("*****aboutHandler running*****")
+// 	session, _ := store.Get(r, "session")
+// 	_, ok := session.Values["userID"]
+// 	fmt.Println("ok:", ok)
+// 	if !ok {
+// 		http.Redirect(w, r, "/login", http.StatusFound)
+// 		return
+// 	}
+// 	tpl.ExecuteTemplate(w, "about.html", "Logged In")
+// }
+
+// func logoutHandler(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("*****logoutHandler running*****")
+// 	session, _ := store.Get(r, "session")
+
+// 	delete(session.Values, "userID")
+// 	session.Save(r, w)
+// 	tpl.ExecuteTemplate(w, "login.html", "Logged Out")
+// }
+
+// func registerHandler(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Println("*****registerHandler running*****")
+// 	tpl.ExecuteTemplate(w, "register.html", nil)
+// }
+
+// func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
+
+// 	fmt.Println("*****registerAuthHandler running*****")
+// 	r.ParseForm()
+// 	username := r.FormValue("username")
+
+// 	var nameAlphaNumeric = true
+// 	for _, char := range username {
+
+// 		if unicode.IsLetter(char) == false && unicode.IsNumber(char) == false {
+// 			nameAlphaNumeric = false
+// 		}
+// 	}
+
+// 	var nameLength bool
+// 	if 5 <= len(username) && len(username) <= 50 {
+// 		nameLength = true
+// 	}
+
+// 	password := r.FormValue("password")
+// 	fmt.Println("password:", password, "\npswdLength:", len(password))
+
+// 	var pswdLowercase, pswdUppercase, pswdNumber, pswdSpecial, pswdLength, pswdNoSpaces bool
+// 	pswdNoSpaces = true
+// 	for _, char := range password {
+// 		switch {
+
+// 		case unicode.IsLower(char):
+// 			pswdLowercase = true
+
+// 		case unicode.IsUpper(char):
+// 			pswdUppercase = true
+
+// 		case unicode.IsNumber(char):
+// 			pswdNumber = true
+
+// 		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+// 			pswdSpecial = true
+
+// 		case unicode.IsSpace(int32(char)):
+// 			pswdNoSpaces = false
+// 		}
+// 	}
+// 	if 11 < len(password) && len(password) < 60 {
+// 		pswdLength = true
+// 	}
+// 	fmt.Println("pswdLowercase:", pswdLowercase, "\npswdUppercase:", pswdUppercase, "\npswdNumber:", pswdNumber, "\npswdSpecial:", pswdSpecial, "\npswdLength:", pswdLength, "\npswdNoSpaces:", pswdNoSpaces, "\nnameAlphaNumeric:", nameAlphaNumeric, "\nnameLength:", nameLength)
+// 	if !pswdLowercase || !pswdUppercase || !pswdNumber || !pswdSpecial || !pswdLength || !pswdNoSpaces || !nameAlphaNumeric || !nameLength {
+// 		tpl.ExecuteTemplate(w, "register.html", "please check username and password criteria")
+// 		return
+// 	}
+
+// 	stmt := "SELECT UserID FROM bcrypt WHERE username = ?"
+// 	row := db.QueryRow(stmt, username)
+// 	var uID string
+// 	err := row.Scan(&uID)
+// 	if err != sql.ErrNoRows {
+// 		fmt.Println("username already exists, err:", err)
+// 		tpl.ExecuteTemplate(w, "register.html", "username already taken")
+// 		return
+// 	}
+
+// 	var hash []byte
+
+// 	hash, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+// 	if err != nil {
+// 		fmt.Println("bcrypt err:", err)
+// 		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
+// 		return
+// 	}
+// 	fmt.Println("hash:", hash)
+// 	fmt.Println("string(hash):", string(hash))
+
+// 	var insertStmt *sql.Stmt
+// 	insertStmt, err = db.Prepare("INSERT INTO bcrypt (Username, Hash) VALUES (?, ?);")
+// 	if err != nil {
+// 		fmt.Println("error preparing statement:", err)
+// 		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
+// 		return
+// 	}
+// 	defer insertStmt.Close()
+// 	var result sql.Result
+
+// 	result, err = insertStmt.Exec(username, hash)
+// 	rowsAff, _ := result.RowsAffected()
+// 	lastIns, _ := result.LastInsertId()
+// 	fmt.Println("rowsAff:", rowsAff)
+// 	fmt.Println("lastIns:", lastIns)
+// 	fmt.Println("err:", err)
+// 	if err != nil {
+// 		fmt.Println("error inserting new user")
+// 		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
+// 		return
+// 	}
+// 	fmt.Fprint(w, "congrats, your account has been successfully created")
+// }
+
+func movie_list(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Println("*****movie_list*****")
 	session, _ := store.Get(r, "session")
 	_, ok := session.Values["userID"]
 	fmt.Println("ok:", ok)
@@ -85,128 +255,62 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	tpl.ExecuteTemplate(w, "index.html", "Logged In")
-}
-
-func aboutHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****aboutHandler running*****")
-	session, _ := store.Get(r, "session")
-	_, ok := session.Values["userID"]
-	fmt.Println("ok:", ok)
-	if !ok {
-		http.Redirect(w, r, "/login", http.StatusFound)
+	println("ID:", userID)
+	name := userID
+	rows, err := db.Query("SELECT * FROM movie_rating WHERE userID = ?", name)
+	if err != nil {
+		fmt.Printf("error")
 		return
 	}
-	tpl.ExecuteTemplate(w, "about.html", "Logged In")
-}
+	defer rows.Close()
 
-func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****logoutHandler running*****")
-	session, _ := store.Get(r, "session")
-
-	delete(session.Values, "userID")
-	session.Save(r, w)
-	tpl.ExecuteTemplate(w, "login.html", "Logged Out")
-}
-
-func registerHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****registerHandler running*****")
-	tpl.ExecuteTemplate(w, "register.html", nil)
-}
-
-func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
-
-	fmt.Println("*****registerAuthHandler running*****")
-	r.ParseForm()
-	username := r.FormValue("username")
-
-	var nameAlphaNumeric = true
-	for _, char := range username {
-
-		if unicode.IsLetter(char) == false && unicode.IsNumber(char) == false {
-			nameAlphaNumeric = false
+	for rows.Next() {
+		var mov Films
+		if err := rows.Scan(&mov.UserID, &mov.MovieID, &mov.Ratings); err != nil {
+			fmt.Printf("error")
 		}
-	}
 
-	var nameLength bool
-	if 5 <= len(username) && len(username) <= 50 {
-		nameLength = true
-	}
-
-	password := r.FormValue("password")
-	fmt.Println("password:", password, "\npswdLength:", len(password))
-
-	var pswdLowercase, pswdUppercase, pswdNumber, pswdSpecial, pswdLength, pswdNoSpaces bool
-	pswdNoSpaces = true
-	for _, char := range password {
-		switch {
-
-		case unicode.IsLower(char):
-			pswdLowercase = true
-
-		case unicode.IsUpper(char):
-			pswdUppercase = true
-
-		case unicode.IsNumber(char):
-			pswdNumber = true
-
-		case unicode.IsPunct(char) || unicode.IsSymbol(char):
-			pswdSpecial = true
-
-		case unicode.IsSpace(int32(char)):
-			pswdNoSpaces = false
+		movie, err := getMovieByID(mov.MovieID)
+		if err != nil {
+			log.Fatalf("failed to get movie details: %v", err)
 		}
-	}
-	if 11 < len(password) && len(password) < 60 {
-		pswdLength = true
-	}
-	fmt.Println("pswdLowercase:", pswdLowercase, "\npswdUppercase:", pswdUppercase, "\npswdNumber:", pswdNumber, "\npswdSpecial:", pswdSpecial, "\npswdLength:", pswdLength, "\npswdNoSpaces:", pswdNoSpaces, "\nnameAlphaNumeric:", nameAlphaNumeric, "\nnameLength:", nameLength)
-	if !pswdLowercase || !pswdUppercase || !pswdNumber || !pswdSpecial || !pswdLength || !pswdNoSpaces || !nameAlphaNumeric || !nameLength {
-		tpl.ExecuteTemplate(w, "register.html", "please check username and password criteria")
-		return
+
+		fmt.Printf("Movie: %s\nYear: %s\n", movie.Title, movie.Year)
+		movinfo.Title = movie.Title
+		movinfo.Year = movie.Year
+		movinfo.Ratings = mov.Ratings
+
+		movinfos = append(movinfos, movinfo)
+
 	}
 
-	stmt := "SELECT UserID FROM bcrypt WHERE username = ?"
-	row := db.QueryRow(stmt, username)
-	var uID string
-	err := row.Scan(&uID)
-	if err != sql.ErrNoRows {
-		fmt.Println("username already exists, err:", err)
-		tpl.ExecuteTemplate(w, "register.html", "username already taken")
-		return
-	}
+	fmt.Println(movinfos)
 
-	var hash []byte
-
-	hash, err = bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	tmpl := template.Must(template.ParseFiles("templates/movie_list.html"))
+	err = tmpl.Execute(w, movinfos)
 	if err != nil {
-		fmt.Println("bcrypt err:", err)
-		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
+		fmt.Println(err)
 		return
-	}
-	fmt.Println("hash:", hash)
-	fmt.Println("string(hash):", string(hash))
 
-	var insertStmt *sql.Stmt
-	insertStmt, err = db.Prepare("INSERT INTO bcrypt (Username, Hash) VALUES (?, ?);")
-	if err != nil {
-		fmt.Println("error preparing statement:", err)
-		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
-		return
 	}
-	defer insertStmt.Close()
-	var result sql.Result
+}
+func getMovieByID(id string) (*Movie, error) {
+	client := resty.New()
+	response, err := client.R().
+		SetQueryParams(map[string]string{
+			"i": id,
+		}).
+		SetResult(&Movie{}).
+		Get("http://www.omdbapi.com/?apikey=e24ea998")
 
-	result, err = insertStmt.Exec(username, hash)
-	rowsAff, _ := result.RowsAffected()
-	lastIns, _ := result.LastInsertId()
-	fmt.Println("rowsAff:", rowsAff)
-	fmt.Println("lastIns:", lastIns)
-	fmt.Println("err:", err)
 	if err != nil {
-		fmt.Println("error inserting new user")
-		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
-		return
+		return nil, err
 	}
-	fmt.Fprint(w, "congrats, your account has been successfully created")
+
+	if response.IsError() {
+		return nil, fmt.Errorf("failed to get movie details: %v", response.Error())
+	}
+
+	movie := response.Result().(*Movie)
+	return movie, nil
 }
