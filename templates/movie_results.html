@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <table>
+
+        <tr>
+            <td>{{.Title}}</td>
+            <td>{{.Year}}</td>
+            <td>{{.IMDBID}} </td>
+            <form action="/ratings" method="post">
+                <input type="text" name="IMDBID" value={{.IMDBID}}>
+                <button type="submit" name="submit">Submit</button>
+            </form>
+
+
+        </tr>
+
+    </table>
+</body>
+
+</html>
