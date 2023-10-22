@@ -16,6 +16,7 @@
             <td>{{.IMDBID}} </td>
             <form action="/ratings" method="post">
                 <input type="text" name="IMDBID" value={{.IMDBID}}>
+                <input type="text" name="ratings">
                 <button type="submit" name="submit">Submit</button>
             </form>
 
