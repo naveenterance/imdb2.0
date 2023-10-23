@@ -14,9 +14,16 @@
         <li>
 
             Movie: {{.Title}}<br>
-            Year :{{.Year}}
-            <img src={{.Poster}} alt="">
+            Year :{{.Year}}<br>
+            Id :{{.IMDBID}}<br>
+            <img src={{.Poster}} alt=""><br>
             Ratings: {{.Ratings}}<br>
+            <form action="/entry" method="post">
+                <input type="text" name="IMDBID" value={{.IMDBID}}>
+
+                <button type="submit" name="submit">Delete</button>
+            </form><br>
+
 
 
         </li>

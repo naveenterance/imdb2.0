@@ -41,6 +41,7 @@ type Movie struct {
 	Title  string `json:"Title"`
 	Year   string `json:"Year"`
 	Poster string `json:"Poster"`
+	IMDBID string `json:"IMDBID"`
 }
 
 type FilmsInfo struct {
@@ -48,6 +49,7 @@ type FilmsInfo struct {
 	Year    string
 	Ratings string
 	Poster  string
+	IMDBID  string
 }
 
 var movinfo FilmsInfo
@@ -57,8 +59,6 @@ var db *sql.DB
 var tpl *template.Template
 var userID, hash string
 var store = sessions.NewCookieStore([]byte("super-secret"))
-
-// var store1 = sessions.NewCookieStore([]byte("no-repeat"))
 
 func main() {
 	tpl, _ = template.ParseGlob("templates/*.html")
@@ -77,7 +77,7 @@ func main() {
 	http.HandleFunc("/submit", processForm)
 	http.HandleFunc("/data", data)
 	http.HandleFunc("/ratings", ratings)
-	// http.HandleFunc("/about", aboutHandler)
+	http.HandleFunc("/entry", entry)
 	http.HandleFunc("/", movie_list)
 
 	http.ListenAndServe("localhost:8080", context.ClearHandler(http.DefaultServeMux))
@@ -120,19 +120,6 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	tpl.ExecuteTemplate(w, "login.html", "check username and password")
 }
 
-// func indexHandler(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Println("*****indexHandler running*****")
-// 	session, _ := store.Get(r, "session")
-// 	_, ok := session.Values["userID"]
-// 	fmt.Println("ok:", ok)
-// 	if !ok {
-// 		http.Redirect(w, r, "/login", http.StatusFound)
-// 		return
-// 	}
-// 	tpl.ExecuteTemplate(w, "index.html", "Logged In")
-// }
-
-// func aboutHandler(w http.ResponseWriter, r *http.Request) {
 // 	fmt.Println("*****aboutHandler running*****")
 // 	session, _ := store.Get(r, "session")
 // 	_, ok := session.Values["userID"]
@@ -273,9 +260,6 @@ func movie_list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rows.Close()
-	// session1, _ := store.Get(r, "session-name")
-
-	// if session1.Values["once"] != true {
 
 	for rows.Next() {
 		var mov Films
@@ -292,14 +276,12 @@ func movie_list(w http.ResponseWriter, r *http.Request) {
 		movinfo.Title = movie.Title
 		movinfo.Year = movie.Year
 		movinfo.Poster = movie.Poster
+		movinfo.IMDBID = movie.IMDBID
 		movinfo.Ratings = mov.Ratings
 
 		movinfos = append(movinfos, movinfo)
 
 	}
-	// session1.Values["once"] = true
-	// session1.Save(r, w)
-	// }
 
 	fmt.Println(movinfos)
 
@@ -438,6 +420,37 @@ func ratings(w http.ResponseWriter, r *http.Request) {
 		ratings := r.Form.Get("ratings")
 
 		_, err = db.Exec("INSERT INTO movie_rating (userID, movieID, ratings) VALUES (?, ?, ?)", userID, IMDBID, ratings)
+		if err != nil {
+			fmt.Errorf("addAlbum: %v", err)
+			return
+		}
+
+		fmt.Println("entered")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+}
+
+func entry(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****movie_list*****")
+	session, _ := store.Get(r, "session")
+	_, ok := session.Values["userID"]
+	fmt.Println("ok:", ok)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
+	if r.Method == "POST" {
+
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Fprintf(w, "Error parsing form data")
+			return
+		}
+
+		IMDBID := r.Form.Get("IMDBID")
+
+		_, err = db.Exec("DELETE FROM movie_rating WHERE movieID = (?) AND userID = (?)", IMDBID, userID)
 		if err != nil {
 			fmt.Errorf("addAlbum: %v", err)
 			return
