@@ -38,14 +38,16 @@ type Films struct {
 }
 
 type Movie struct {
-	Title string `json:"Title"`
-	Year  string `json:"Year"`
+	Title  string `json:"Title"`
+	Year   string `json:"Year"`
+	Poster string `json:"Poster"`
 }
 
 type FilmsInfo struct {
 	Title   string
 	Year    string
 	Ratings string
+	Poster  string
 }
 
 var movinfo FilmsInfo
@@ -55,6 +57,8 @@ var db *sql.DB
 var tpl *template.Template
 var userID, hash string
 var store = sessions.NewCookieStore([]byte("super-secret"))
+
+// var store1 = sessions.NewCookieStore([]byte("no-repeat"))
 
 func main() {
 	tpl, _ = template.ParseGlob("templates/*.html")
@@ -269,6 +273,9 @@ func movie_list(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer rows.Close()
+	// session1, _ := store.Get(r, "session-name")
+
+	// if session1.Values["once"] != true {
 
 	for rows.Next() {
 		var mov Films
@@ -284,16 +291,21 @@ func movie_list(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Movie: %s\nYear: %s\n", movie.Title, movie.Year)
 		movinfo.Title = movie.Title
 		movinfo.Year = movie.Year
+		movinfo.Poster = movie.Poster
 		movinfo.Ratings = mov.Ratings
 
 		movinfos = append(movinfos, movinfo)
 
 	}
+	// session1.Values["once"] = true
+	// session1.Save(r, w)
+	// }
 
 	fmt.Println(movinfos)
 
 	tmpl := template.Must(template.ParseFiles("templates/movie_list.html"))
 	err = tmpl.Execute(w, movinfos)
+	movinfos = nil
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -400,7 +412,7 @@ func ratings(w http.ResponseWriter, r *http.Request) {
 		}
 
 		fmt.Println("entered")
-		return
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
 }

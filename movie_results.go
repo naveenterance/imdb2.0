@@ -50,6 +50,7 @@ var movinfos []FilmsInfo
 var searchTerm string
 var db *sql.DB
 var store = sessions.NewCookieStore([]byte("secret-key"))
+var store1 = sessions.NewCookieStore([]byte("no-repeat"))
 
 func form(w http.ResponseWriter, r *http.Request) {
 
@@ -146,9 +147,9 @@ func movie_list(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	session, _ := store.Get(r, "session-name")
+	session1, _ := store.Get(r, "session-name")
 
-	if session.Values["once"] != true {
+	if session1.Values["once"] != true {
 
 		for rows.Next() {
 			var mov Films
@@ -169,8 +170,8 @@ func movie_list(w http.ResponseWriter, r *http.Request) {
 			movinfos = append(movinfos, movinfo)
 
 		}
-		session.Values["once"] = true
-		session.Save(r, w)
+		session1.Values["once"] = true
+		session1.Save(r, w)
 	}
 
 	fmt.Println(movinfos)
