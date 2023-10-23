@@ -14,6 +14,7 @@
             <td>{{.Title}}</td>
             <td>{{.Year}}</td>
             <td>{{.IMDBID}} </td>
+            <td> <img src={{.Poster}}> </td>
             <form action="/ratings" method="post">
                 <input type="text" name="IMDBID" value={{.IMDBID}}>
                 <input type="text" name="ratings">

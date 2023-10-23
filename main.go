@@ -334,6 +334,14 @@ func getMovieByID(id string) (*Movie, error) {
 }
 
 func form(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****movie_list*****")
+	session, _ := store.Get(r, "session")
+	_, ok := session.Values["userID"]
+	fmt.Println("ok:", ok)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 
 	fmt.Println("form vewing")
 
@@ -348,6 +356,14 @@ func form(w http.ResponseWriter, r *http.Request) {
 }
 
 func processForm(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****movie_list*****")
+	session, _ := store.Get(r, "session")
+	_, ok := session.Values["userID"]
+	fmt.Println("ok:", ok)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 
 	fmt.Println("form processing")
 	if r.Method != "POST" {
@@ -364,6 +380,14 @@ func processForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func data(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****movie_list*****")
+	session, _ := store.Get(r, "session")
+	_, ok := session.Values["userID"]
+	fmt.Println("ok:", ok)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 	fmt.Println("results")
 
 	baseURL := "http://www.omdbapi.com/"
@@ -394,6 +418,14 @@ func data(w http.ResponseWriter, r *http.Request) {
 
 }
 func ratings(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****movie_list*****")
+	session, _ := store.Get(r, "session")
+	_, ok := session.Values["userID"]
+	fmt.Println("ok:", ok)
+	if !ok {
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
+	}
 	if r.Method == "POST" {
 
 		err := r.ParseForm()
