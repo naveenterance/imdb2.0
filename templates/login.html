@@ -1,9 +1,28 @@
 <!DOCTYPE html>
 <html>
+    <!-- Font Awesome -->
+<link
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+rel="stylesheet"
+/>
+<!-- Google Fonts -->
+<link
+href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+rel="stylesheet"
+/>
+<!-- MDB -->
+<link
+href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css"
+rel="stylesheet"
+/>
+<!-- MDB -->
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"
+></script>
+<body  >
 
-<body>
-
-    <h2>Login</h2><br>
+    <!-- <h2>Login</h2><br>
 
     <form action="/loginauth" method="POST">
         <label for="username">Name:</label><br>
@@ -17,9 +36,83 @@
     {{if .}}
     {{.}}
     {{end}}
-    <a href="/register">Register</a>
+    <a href="/register">Register</a> -->
 
 
+    <!-- Pills navs -->
+<div style="width: 400px; margin: auto;padding-top: 10%; ">
+<ul class="nav nav-pills nav-justified mb-3" id="ex1" role="tablist">
+    <li class="nav-item" role="presentation">
+      <a class="nav-link active" id="tab-login" data-mdb-toggle="pill" href="#pills-login" role="tab"
+        aria-controls="pills-login" aria-selected="true">Login</a>
+    </li>
+    <li class="nav-item" role="presentation">
+      <a class="nav-link" id="tab-register" data-mdb-toggle="pill" href="#pills-register" role="tab"
+        aria-controls="pills-register" aria-selected="false">Register</a>
+    </li>
+  </ul>
+  <!-- Pills navs -->
+  
+  <!-- Pills content -->
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="pills-login" role="tabpanel" aria-labelledby="tab-login">
+      <form action="/loginauth" method="POST">
+     
+  
+  
+        <div class="form-outline mb-4">
+         
+         
+          <input type="text" id="username" name="username" class="form-control"><br>
+          <label class="form-label" for="username">Name:</label>
+        </div>
+  
+        <!-- Password input -->
+        <div class="form-outline mb-4">
+          
+          <input type="password" id="password" name="password" class="form-control" />
+          <label class="form-label" for="password">Password</label>
+        </div>
+  
+        
+     
+  
+        <!-- Submit button -->
+        <button type="submit" class="btn btn-primary btn-block mb-4">Sign in</button>
+  
+        <!-- Register buttons -->
+      
+      </form>
+    </div>
+    <div class="tab-pane fade" id="pills-register" role="tabpanel" aria-labelledby="tab-register">
+      <form action="/registerauth" method="POST">
+     
+  
+  
+     
+        <!-- Username input -->
+        <div class="form-outline mb-4">
+          <input type="text" id="username" name="username" class="form-control" />
+          <label class="form-label" for="username">Username</label>
+        </div>
+  
+  
+        <!-- Password input -->
+        <div class="form-outline mb-4">
+          <input type="password"  id="password" name="password" class="form-control" />
+          <label class="form-label" for="password">Password</label>
+        </div>
+  
+      
+  
+        <!-- Submit button -->
+        <button type="submit" class="btn btn-primary btn-block mb-3">Register</button>
+      </form>
+    </div>
+  </div>
+  <!-- Pills content -->
+
+</div>
 
 </body>
 

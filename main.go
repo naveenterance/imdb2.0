@@ -9,12 +9,11 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/go-resty/resty/v2"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/context"
 	"github.com/gorilla/sessions"
 	"golang.org/x/crypto/bcrypt"
-
-	"github.com/go-resty/resty/v2"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 type SearchResult struct {
@@ -119,17 +118,6 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("incorrect password")
 	tpl.ExecuteTemplate(w, "login.html", "check username and password")
 }
-
-// 	fmt.Println("*****aboutHandler running*****")
-// 	session, _ := store.Get(r, "session")
-// 	_, ok := session.Values["userID"]
-// 	fmt.Println("ok:", ok)
-// 	if !ok {
-// 		http.Redirect(w, r, "/login", http.StatusFound)
-// 		return
-// 	}
-// 	tpl.ExecuteTemplate(w, "about.html", "Logged In")
-// }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****logoutHandler running*****")
@@ -239,7 +227,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		tpl.ExecuteTemplate(w, "register.html", "there was a problem registering account")
 		return
 	}
-	fmt.Fprint(w, "congrats, your account has been successfully created")
+	fmt.Fprint(w, "congrats, your account has been successfully created ,go back and login")
 }
 
 func movie_list(w http.ResponseWriter, r *http.Request) {
