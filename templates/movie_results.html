@@ -1,31 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta http-equiv="X-UA-Compatible" content="ie=edge">
+      <title>HTML 5 Boilerplate</title>
+      <link rel="stylesheet" href="style.css">
+      <!-- Font Awesome -->
+      <link
+         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+         rel="stylesheet"
+         />
+      <!-- Google Fonts -->
+      <link
+         href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+         rel="stylesheet"
+         />
+      <!-- MDB -->
+      <link
+         href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css"
+         rel="stylesheet"
+         />
+      <!-- MDB -->
+      <script
+         type="text/javascript"
+         src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"
+         ></script>
+   </head>
+   <body>
+      <div class="grid " >
+         
+         <div class="card mb-3  p-3 hover-zoom" >
+            <div class="row g-0">
+               <div class="col-md-4">
+                  <img
+                     src="{{.Poster}}"
+                     alt="Poster not available"
+                     class="img-fluid rounded-start"
+                     />
+               </div>
+               <div class="col-md-8">
+                  <div class="card-body">
+                     <input  class="invisible" type="text" name="IMDBID" value={{.IMDBID}}>
+                     <h4 class="card-title">{{.Title}}</h4>
+                     <h5 class ="card-title">
+                     {{.Year}}
+                     <h5>
+                     <p class="card-text">
+                     </p>
+                     <p class="card-text">
+                        <small class="text-muted"></small>
+                     </p>
+                     <form action="/ratings" method="post">
+                      <input class="invisible" type="text" name="IMDBID" value={{.IMDBID}}>
+                  
+                        <label class="form-label" for="customRange1" >Rate It</label>
+                     <div class="range">
+                      <input type="range" class="form-range" name="ratings" id="customRange1" />
+                      </div>
+                        <div class="p-3">
+                           <button  type="submit" class="btn btn-outline-success btn-floating " data-mdb-ripple-color="dark">
+                           <i class="fas fa-check fa-2x"></i>
+                           </button>
+                        </div>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-
-<body>
-    <table>
-
-        <tr>
-            <td>{{.Title}}</td>
-            <td>{{.Year}}</td>
-            <td>{{.IMDBID}} </td>
-            <td> <img src={{.Poster}}> </td>
-            <form action="/ratings" method="post">
-                <input type="text" name="IMDBID" value={{.IMDBID}}>
-                <input type="text" name="ratings">
-                <button type="submit" name="submit">Submit</button>
-            </form>
-
-
-        </tr>
-
-    </table>
-    <a href="/logout">Logout</a>
-</body>
-
+                     </form>
+                  </div>
+               </div>
+            </div>
+         </div>
+        
+      </div>
+    
+   
+   </body>
 </html>

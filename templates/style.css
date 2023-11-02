@@ -1,0 +1,19 @@
+.card{
+ padding: 10px;margin: 10px;
+ max-width: 90%;
+ max-height: 80%;
+}
+.grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-column-gap: 1px;
+  grid-row-gap: 1px;
+}
+
+
+.visible {
+  visibility: visible !important;
+}
+.invisible {
+  visibility: hidden !important;
+}

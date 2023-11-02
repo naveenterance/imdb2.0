@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -33,4 +33,114 @@
     <a href="/logout">Logout</a>
 </body>
 
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>HTML 5 Boilerplate</title>
+    <link rel="stylesheet" href="style.css" />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.css"
+      rel="stylesheet"
+    />
+    <!-- MDB -->
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.4.2/mdb.min.js"
+    ></script>
+  </head>
+  <body>
+    <form action="/submit" method="post">
+      <div
+        class="input-group rounded"
+        style="width: 400px; margin: auto; padding-top: 2%"
+      >
+        <input
+          type="text"
+          id="name"
+          name="name"
+          class="form-control rounded"
+          placeholder="Search"
+          aria-label="Search"
+          aria-describedby="search-addon"
+        />
+        <span class="input-group-text border-0" id="search-addon">
+          <a href="/logout"
+            ><button
+              type="button"
+              class="btn btn-outline-danger"
+              data-mdb-ripple-color="dark"
+            >
+              logout
+            </button></a
+          >
+        </span>
+      </div>
+    </form>
+    <div class="grid">
+      {{range .}}
+      <div class="card mb-3 p-3 hover-zoom">
+        <div class="row g-0">
+          <div class="col-md-4">
+            <img
+              src="{{.Poster}}"
+              alt="Poster not available"
+              class="img-fluid rounded-start"
+            />
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <input
+                class="invisible"
+                type="text"
+                name="IMDBID"
+                value="{{.IMDBID}}"
+              />
+              <h4 class="card-title">{{.Title}} ( {{.Year}} )</h4>
+
+              <h3 class="card-title text-success">[ {{.Ratings}} ]</h3>
+              
+                <form action="/entry" method="post">
+                    <div class="row"></div>
+                  <div class="col-4">
+                    <input
+                      class="invisible"
+                      type="text"
+                      name="IMDBID"
+                      value="{{.IMDBID}}"
+                    />
+                  </div>
+                  <div class="col-4">
+                    <button
+                      type="submit"
+                      class="btn btn-outline-danger btn-floating"
+                      data-mdb-ripple-color="dark"
+                    >
+                      <i class="far fa-trash-can fa-2x"></i>
+                    </button>
+                  </div>
+                </div>
+                </form>
+             
+            </div>
+          </div>
+        </div>
+      </div>
+      {{end}}
+    </div>
+  </body>
 </html>
